@@ -19,35 +19,30 @@ import altair as alt
 st.set_page_config(layout="wide")
 st.logo("LWA-v2-square.png", size="large")    
 st.image("LWA-demo-lab-bar.png", use_container_width=True )
-st.title("Look Now: The Palo Alto Planning Commission")
+st.title("Look Now: The Menlo Park Planning Commission")
 
 # decorative image of the town
 st.image("https://canopy.org/wp-content/uploads/Arial-View-of-Palo-Alto_header-image-.jpg", use_container_width=True)
 
 # Short overview
 # [2025-08-25] TO DO: should modify to scan external .md file for this content, instead of hardcoding
+# [2025-09-01] Copied and lightly edited MPPC summary from LLM response
 st.markdown('''
             ##### Overview of Commission meetings 1H 2025: 
-Palo Alto's Planning & Transportation Commission (PTC) focused in 1H 2025 on a range of urban planning and infrastructure topics, including:
-
-+ the redevelopment of opportunity sites for housing and retail
-+ addressing parking concerns with new systems and policies
-+ updating the bicycle and pedestrian transportation plan
-+ and reviewing conditional use permits for specific projects. 
-
-The meetings highlight the PTC's role in making recommendations to the City Council on issues such as affordable housing requirements, traffic safety initiatives, and the future development of key areas like Cubberly and El Camino Real, often involving extensive public and staff input and complex legal and policy considerations.
+The Menlo Park Planning Commission focused meetings in 1H 2025 on **various development projects within the city**, including discussions on **single-family homes, accessory dwelling units (ADUs), affordable housing initiatives, and larger mixed-use developments**. Recurring themes include **navigating zoning ordinances, addressing community concerns about traffic, environmental impacts, and design aesthetics, and ensuring compliance with state-mandated housing goals**. The commissions also consider **variances, use permits, and the implementation of the city's Housing Element and Environmental Justice Element**.
             ''')
 
 # SUMMARY VISUALIZATIONS ON TOPICS, PROJECTS, COMMISSIONERS
 
+# MEETING HIGHLIGHTS
 # BAR CHART WITH Meeting Highlights for 1H 2025
 st.subheader("Meeting Highlights", anchor="meeting-highlights")
 
-chart_df = pd.read_csv('PAPTC-meeting-metrics_1H2025.csv')
-chart_df["Date"] = pd.to_datetime(chart_df["date"])
-chart_df["Duration"] = pd.to_numeric(chart_df["duration"], errors='coerce')
-chart_df["Topic Count"] = chart_df["topics-discussed"]
-chart_df["Topic List"] = chart_df["topics-list"]
+chart_df = pd.read_csv('mppc_highlights_2025-08-28_v2_with-youtube-links.csv')
+chart_df["Date"] = pd.to_datetime(chart_df["Date"])
+chart_df["Duration (min)"] = pd.to_numeric(chart_df["Length (min)"], errors='coerce')
+chart_df["Topic Count"] = chart_df["Topic_Count"]
+chart_df["Topics"] = chart_df["Topics_Discussed"]
 chart_df["Youtube link"] = chart_df["youtube-link"]
 
 # DEPRECATED simple streamlit bar chart since this does not support clickable link
@@ -56,17 +51,18 @@ chart_df["Youtube link"] = chart_df["youtube-link"]
 
 # ADDED enhanced altair interactive chart
 mtg_chart = alt.Chart(chart_df).mark_bar().encode(
-    x='date',
-    y= 'duration',
+    x='Date',
+    y= 'Duration (min)',
     color=alt.value('#A9CCE3'),
     # href='youtube-link',  DEPRECATED for ux reasons
-    tooltip=['Date', 'Duration', 'Topic Count', 'Topic List'] # removed "'Youtube link' from list"
+    tooltip=['Date', 'Duration (min)', 'Topic Count', 'Topics_Discussed'] # removed "'Youtube link' from list"
 ).properties(title="Rollover any bar for meeting highlights by date")
 
 st.altair_chart(mtg_chart, use_container_width=True)
 
 st.markdown("[CLICK HERE for Meeting Details](#meeting-details)")
 
+# PLANNING PROJECTS
 # INTERACTIVE MAP of projects presented to the Planning Commmission
 st.subheader("Project Map", anchor="project-map")
 st.write("Hover over the pins to see detailed project information. Click on a pin for a popup and to see the project name below.")
@@ -76,24 +72,24 @@ st.markdown("[CLICK HERE FOR DETAILS on each project](#project-details)")
 # Ensure the CSV file 'MPPC_projects_1H2025_2025-08-06_map_source.csv' is available in the environment.
 try:
     # Using the exact filename provided by the user
-    df = pd.read_csv("PAPTC_projects_1H2025_map_table_v2.csv")
+    df = pd.read_csv("mppc_projects_2025-08-28_v2_geocodio_20250901v2_fixes.csv")
 except FileNotFoundError:
-    st.error("Error: The CSV file 'PAPTC_projects_1H2025_map_table_v2.csv' was not found.")
+    st.error("Error: The CSV file 'mppc_projects_2025-08-28_v2_geocodio_20250901v2_fixes' was not found.")
     st.stop()
 
 # --- Data Preprocessing and Handling Missing Values ---
 
 # Rename columns for easier access (optional, but good practice)
 df.rename(columns={
-    'Project': 'name',
-    'Latitude': 'latitude',
-    'Longitude': 'longitude',
-    'Address': 'address',
-    'City': 'city',
-    'Description': 'description',
-    'URL': 'url', # 2025-08-06 DEPRECATE until CSV appended
-    'First Mention': 'earliest_mention_date', # Renamed
-    'Last Mention': 'latest_mention_date'    # Renamed
+    'project_name': 'project',
+    'Geocodio Latitude': 'latitude',
+    'Geocodio Longitude': 'longitude',
+    'street_address': 'address',
+    'city': 'city',
+    'project_description': 'description',
+    # 'URL': 'url', # 2025-08-06 DEPRECATE until CSV appended
+    'first_mention_date': 'earliest_mention_date', # Renamed
+    'last_mention_date': 'latest_mention_date'    # Renamed
 }, inplace=True)
 
 # Convert latitude and longitude to numeric, coercing errors to NaN
@@ -106,22 +102,22 @@ df.dropna(subset=['latitude', 'longitude'], inplace=True)
 if len(df) < initial_rows:
     st.warning(f"Removed {initial_rows - len(df)} rows due to missing Latitude or Longitude data.")
 
-# Further filter to ensure only Palo Alto projects are shown (if 'City' column exists and is needed)
+# Further filter to ensure only Menlo Park projects are shown (if 'City' column exists and is needed)
 if 'city' in df.columns:
-    df = df[df['city'].astype(str).str.contains('Palo Alto', case=False, na=False)]
+    df = df[df['city'].astype(str).str.contains('Menlo Park', case=False, na=False)]
     if df.empty:
-        st.warning("No projects found for Palo Alto after filtering.")
+        st.warning("No projects found for Menlo Park after filtering.")
         st.stop()
 else:
     st.warning("The 'City' column was not found in the CSV. Displaying all projects with valid coordinates.")
 
-# Center the map around Palo Alto, CA
-# Using the mean of the available Palo Alto coordinates for a more accurate center
+# Center the map around Menlo Park, CA
+# Using the mean of the available Menlo Park coordinates for a more accurate center
 if not df.empty:
     map_center = [df['latitude'].mean(), df['longitude'].mean()]
 else:
-    # Fallback to a default Palo Alto center if no valid data points
-    map_center = [37.440848, -122.156314] # Professorville, Palo Alto, CA
+    # Fallback to a default Menlo Park center if no valid data points
+    map_center = [37.45398, -122.184425] # Kepler's Plaza, Menlo Park
 
 # Create a Folium map object
 map_height = 800  # Set the height of the map
@@ -129,7 +125,7 @@ m = folium.Map(location=map_center, zoom_start=13, height=map_height, control_sc
 
 # Add markers for each location
 for idx, row in df.iterrows():
-    project_name = row.get('name', 'N/A')
+    project_name = row.get('project', 'N/A')
     project_description = row.get('description', 'No description available.')
     street_address = row.get('address', 'N/A')
     public_url = row.get('url')
@@ -222,7 +218,7 @@ if st.checkbox("Show instructions for interactive map"):
 
 # COMMISSIONER STANCES AND POSITIONS
 # Commissioners policy stances data frame
-stances_df = pd.read_csv('PAPTC-commissioner-stances_2025-08-19_v3.csv')
+stances_df = pd.read_csv('mppc_stances_2025-08-28.csv')
 
 # --- Add this CSS style block to force text color to black ---
 st.markdown("""
@@ -343,7 +339,7 @@ st.subheader("Meeting Details", anchor="meeting-details")
 st.markdown("[CLICK HERE for Meeting Highlights](#meeting-highlights)")
 
 # List of columns you want to display
-selected_columns = ['Date', 'Duration', 'Topic Count', 'Topic List', 'Youtube link']
+selected_columns = ['Date', 'Length (min)', 'Topic Count', 'Topics', 'Youtube link']
 # Create a new DataFrame with only the selected columns
 df_to_display = chart_df[selected_columns]
 
@@ -357,7 +353,8 @@ st.subheader("Project Details", anchor="project-details")
 st.markdown("[CLICK HERE for Project Map](#project-map)")
 
 #columns_to_show = ['Project', 'Address', 'Description', 'First Mention', 'Last Mention']
-columns_to_show = ['name', 'address', 'description', 'earliest_mention_date', 'latest_mention_date', 'url']
+# columns_to_show = ['project', 'address', 'description', 'earliest_mention_date', 'latest_mention_date', 'url'] #need to remove url column for now 9/2/2025.
+columns_to_show = ['project', 'address', 'description', 'earliest_mention_date', 'latest_mention_date']
 
 # st.dataframe(df) # DEPRECATED 2025-08-16
 # use st.table instead, to show multi-row description field
