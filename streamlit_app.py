@@ -38,7 +38,7 @@ The Menlo Park Planning Commission focused meetings in 1H 2025 on **various deve
 # BAR CHART WITH Meeting Highlights for 1H 2025
 st.subheader("Meeting Highlights", anchor="meeting-highlights")
 
-chart_df = pd.read_csv('mppc_highlights_2025-08-28_v2_with-youtube-links.csv')
+chart_df = pd.read_csv('mppc_highlights_2025-08-28_v4_fix-bullets.csv')
 chart_df["Date"] = pd.to_datetime(chart_df["Date"])
 chart_df["Duration (min)"] = pd.to_numeric(chart_df["Length (min)"], errors='coerce')
 chart_df["Topic Count"] = chart_df["Topic_Count"]
