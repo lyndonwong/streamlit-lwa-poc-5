@@ -17,12 +17,12 @@ import altair as alt
 # import streamlit.components.v1 as components
 
 st.set_page_config(layout="wide")
-st.logo("LWA-v2-square.png", size="large")    
-st.image("LWA-demo-lab-bar.png", use_container_width=True )
+st.logo("images/LWA-v2-square.png", size="large")    
+st.image("images/LWA-demo-lab-bar.png", use_container_width=True )
 st.title("Look Now: The Menlo Park Planning Commission")
 
 # decorative image of the town
-st.image("https://canopy.org/wp-content/uploads/Arial-View-of-Palo-Alto_header-image-.jpg", use_container_width=True)
+st.image("images/Menlo_Park_960px.jpg", use_container_width=True)
 
 # Short overview
 # [2025-08-25] TO DO: should modify to scan external .md file for this content, instead of hardcoding
