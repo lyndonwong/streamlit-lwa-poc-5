@@ -218,7 +218,7 @@ if st.checkbox("Show instructions for interactive map"):
 
 # COMMISSIONER STANCES AND POSITIONS
 # Commissioners policy stances data frame
-stances_df = pd.read_csv('mppc_stances_2025-08-28.csv')
+stances_df = pd.read_csv('mppc_stances_2025-09-04_v2.csv')
 
 # --- Add this CSS style block to force text color to black ---
 st.markdown("""
