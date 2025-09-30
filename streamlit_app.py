@@ -1,5 +1,4 @@
-# LWA POC 4 2025-08-11
-# Pursues code changes to connect streamlit LWA POC app to Palo Alto CA planning commission data.
+# LWA POC 5 shows activities of the Menlo Park Planning Commission
 
 import streamlit as st
 import pandas as pd
@@ -39,7 +38,7 @@ The Menlo Park Planning Commission focused meetings in 1H 2025 on **various deve
 st.subheader("Meeting Highlights", anchor="meeting-highlights")
 
 chart_df = pd.read_csv('mppc_highlights_2025-08-28_v4_fix-bullets.csv')
-chart_df["Date"] = pd.to_datetime(chart_df["Date"])
+chart_df["Date"] = pd.to_datetime(chart_df["Date"]).dt.strftime('%Y-%m-%d')
 chart_df["Duration (min)"] = pd.to_numeric(chart_df["Length (min)"], errors='coerce')
 chart_df["Topic Count"] = chart_df["Topic_Count"]
 chart_df["Topics"] = chart_df["Topics_Discussed"]
@@ -336,21 +335,23 @@ with tab_investors:
 
 # Meeting Details table
 st.subheader("Meeting Details", anchor="meeting-details")
-st.markdown("[CLICK HERE for Meeting Highlights](#meeting-highlights)")
 
 # List of columns you want to display
-selected_columns = ['Date', 'Length (min)', 'Topic Count', 'Topics', 'Youtube link']
+selected_columns = ['Date', 'Topics', 'Youtube link']
 # Create a new DataFrame with only the selected columns
 df_to_display = chart_df[selected_columns]
 
 # DEPRECATED 2025-08-16
 # st.dataframe(df_to_display) 
 # use st.table instead, to render markdown in table cells
-st.table(df_to_display)
+
+if st.checkbox("Show Meeting Details"):
+    st.table(df_to_display)
+
+st.markdown("[RETURN to Meeting Highlights](#meeting-highlights)")
 
 # Show table of Key Projects
 st.subheader("Project Details", anchor="project-details")
-st.markdown("[CLICK HERE for Project Map](#project-map)")
 
 #columns_to_show = ['Project', 'Address', 'Description', 'First Mention', 'Last Mention']
 # columns_to_show = ['project', 'address', 'description', 'earliest_mention_date', 'latest_mention_date', 'url'] #need to remove url column for now 9/2/2025.
@@ -358,15 +359,22 @@ columns_to_show = ['project', 'address', 'description', 'earliest_mention_date',
 
 # st.dataframe(df) # DEPRECATED 2025-08-16
 # use st.table instead, to show multi-row description field
-st.table(df[columns_to_show])
+if st.checkbox("Show Project Details"):
+    st.table(df[columns_to_show])
+
+st.markdown("[RETURN to Project Map](#project-map)")
 
 # COMMISSIONER SPECIFIC POSITIONS
 # display subset of columns using st.table for bulleted list in cells
 st.subheader("Commissioner Specific Positions", anchor="commissioner-specific-positions")
-st.markdown("[CLICK HERE for Commissioner Stances at a glance](#commissioner-stances-heatgrid)")
+
 positions_view = ['Commissioner name', 'Positions']
 positions_list_df = stances_df[positions_view]
-st.table(positions_list_df)
+
+if st.checkbox("Show Commissioner Positions"):
+    st.table(positions_list_df)
+
+st.markdown("[RETURN to Commissioner Stances overview](#commissioner-stances-heatgrid)")
 
 # DEPRECATED - replaced by above 2 separate tables
 # display all columns using st.dataframe for horizontal scrolling
